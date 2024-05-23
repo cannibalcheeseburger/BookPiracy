@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+ 
+<head>
+    <title>FlaskTest</title>
+</head>
+ 
+<body>
+
+    <form action="{{ url_for("home")}}" method="post">
+        <label for="mirror">Link:</label>
+        <input type="text" id="mirror" name="mirror" placeholder="link url">
+        <button type="submit">Download</button>
+</body>
+ 
+</html>

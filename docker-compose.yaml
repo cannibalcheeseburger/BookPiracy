@@ -1,0 +1,9 @@
+version: '4'
+
+services:
+  web:
+    build: '.'
+    ports:
+      - '30010:5000'
+    volumes:
+      - ./downloads:/app/downloads

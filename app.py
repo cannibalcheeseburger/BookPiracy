@@ -1,57 +1,30 @@
 # Importing flask module in the project is mandatory
 # An object of Flask class is our WSGI application.
-from flask import Flask
+from flask import Flask,render_template,request,url_for,redirect
 from bs4 import BeautifulSoup as soup
 import wget
 from requests import get
 
-
-# Flask constructor takes the name of 
-# current module (__name__) as argument.
 app = Flask(__name__)
 
-# The route() function of the Flask class is a decorator, 
-# which tells the application which URL should call 
-# the associated function.
-@app.route('/')
-# ‘/’ URL is bound with hello_world() function.
-def hello_world():
-    return 'Hello World'
 
-@app.route('/<title>')
-def get_books(title):
-    url = "https://libgen.is/fiction/?q="
-    url = url + title
-    page_soup = soup(get(url).text,'html.parser')
-    books_soup = soup.find_all(page_soup,"tr")
-    books = []
-    for book in books_soup:
-        row  = []
-        for col in book.find_all("td"):
-            row.append(col)
-        books.append(row)
-    return books
+@app.route('/', methods =["GET", "POST"])
+def home():
+    if request.method == "POST":
+       # getting input with name = fname in HTML form
+       mirror = request.form.get("mirror")
+       return redirect(url_for('download_link')+"?mirror="+mirror)
+    return render_template("base.html")
 
-@app.route('/<title>/<choice>')
-def get_book(title,choice):
-    url = "https://libgen.is/fiction/?q="
-    url = url + title
-    page_soup = soup(get(url).text,'html.parser')
-    books_soup = soup.find_all(page_soup,"tr")
-    books = []
-    for book in books_soup:
-        row  = []
-        for col in book.find_all("td"):
-            row.append(col)
-        books.append(row)        
-    download_book(books[choice])
-    return 'Downloaded:'+ books[choice].text
 
-def download_book(book):
-    mirrors = [link['href'] for link in book[5].find_all("a")]
-    down_link = str(soup(get(mirrors[0]).text,'html.parser').find("h2").find("a")['href'])
-    wget.download(down_link,out="./downloads/"+book[0].text.strip()+"-"+book[2].text.strip().split("\n")[0])
-
+@app.route('/download/')
+def download_link():
+    mirror = request.args.get('mirror') 
+    book_soup = soup(get(mirror).text,'html.parser')
+    down_link = str(book_soup.find("h2").find("a")['href'])
+    title = book_soup.find("h1").text.strip()
+    wget.download(down_link,out="downloads/"+title.replace(" ",'_'))
+    return 'Downloading'
 
 # main driver function
 if __name__ == '__main__':
